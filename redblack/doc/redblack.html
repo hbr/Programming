@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Helmut Brandl" />
+  <meta name="keywords" content="Red Black Tree" />
+  <title>Introduction to Red Black Trees</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Introduction to Red Black Trees</h1>
+<p class="author">Helmut Brandl</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#red-black-trees">Red Black Trees</a></li>
+<li><a href="#basics">Basics</a>
+<ul>
+<li><a href="#definition">Definition</a></li>
+<li><a href="#invariant">Invariant</a></li>
+</ul></li>
+<li><a href="#insertion">Insertion</a>
+<ul>
+<li><a href="#basics-1">Basics</a></li>
+<li><a href="#algorithm">Algorithm</a></li>
+<li><a href="#comparison-to-chris-okasakis-insertion-algorithm">Comparison to Chris Okasaki’s Insertion Algorithm</a></li>
+</ul></li>
+<li><a href="#deletion">Deletion</a>
+<ul>
+<li><a href="#deletion-of-an-interior-node">Deletion of an Interior Node</a></li>
+<li><a href="#deletion-invariant">Deletion Invariant</a></li>
+<li><a href="#deletion-of-a-singleton-node">Deletion of a Singleton Node</a></li>
+<li><a href="#integrate-a-subtree-with-deletion-into-the-parent">Integrate a Subtree with Deletion into the Parent</a></li>
+<li><a href="#termination-of-deletion">Termination of Deletion</a></li>
+</ul></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+</nav>
+<style>
+body{
+    margin-left: 20px;
+    width: 600px;
+}
+
+pre{
+    margin-left: 10px;
+    padding: 5px;
+    background-color: #F0F0F0;
+}
+</style>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-168044895-2">
+</script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-168044895-2');
+</script>
+<h1 id="red-black-trees">Red Black Trees</h1>
+<p>An algorithm for insertion and deletion in a red black tree in a functional setting is described. The description provides evidence for the correctness of the algorithm.</p>
+<p>A red black tree is not a trivial data structure. If you read the wikipedia article, you have the impression, that insertion and deletion are really very complicated, because there are many cases to distinguish. Especially deletion seems to be mind bending.</p>
+<p>In this article we describe an algorithm which reduces the necessary case analysis to a minimum. We try to make the cases as orthogonal as possible, to make them comprehensible.</p>
+<p>Furthermore we provide evidence for the correctness of each step.</p>
+<blockquote>
+<p>Link to an implementation of the described algorithm in Ocaml. <a href="https://github.com/hbr/albatross/blob/feature/ocaml/fmlib/basic/red_black.ml"><strong>Implementation</strong></a></p>
+</blockquote>
+<h1 id="basics">Basics</h1>
+<h2 id="definition">Definition</h2>
+<p>A red black tree is either an empty tree or a node with a color, a left child, an info element and a right child.</p>
+<p>Each node has a color and the empty tree is considered black with a black height of zero.</p>
+<p>A definition in a functional language like ocaml looks like</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>    <span class="kw">type</span> info = ... <span class="co">(* type of the information element, must be sortable *)</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>    <span class="kw">type</span> color = Red | Black</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a>    <span class="kw">type</span> t = Empty | Node <span class="kw">of</span> color * t * info * t</span></code></pre></div>
+<p>Insertion and deletion is always done at the bottom. We insert a node by replacing an empty tree with a singleton red node. We delete a node by replacing a singleton node (i.e. a node with two empty children) with an empty node.</p>
+<h2 id="invariant">Invariant</h2>
+<ol type="1">
+<li><p>A red node has only black children (an empty tree counts as black).</p></li>
+<li><p>Every path from the root to an empty node contains the same number of black nodes.</p></li>
+<li><p>The inorder sequence is sorted i.e. a red black tree is a binary search tree.</p></li>
+</ol>
+<p>Because the empty tree is considered black, a singleton red node does not violate the invariant. It has two empty black children.</p>
+<p>Examples:</p>
+<pre><code>    one red node:
+
+            Rx
+
+    red node with children (only two black children possible):
+
+            Ry
+        Bx      Bz
+
+    black node with one or two children:
+
+            By                  By                  By
+        Rx                  Rx      Rz          Bx      Bz</code></pre>
+<p>If <code>h</code> is the black height of a red black tree, then the maximal height of the tree is <code>2 * h + 1</code>. E.g. a singleton red node has black height <code>0</code> but height <code>1</code>.</p>
+<p>Insertion and deletion might create a violation of the invariant. Inserting a singleton red node below a red node might create a red violation because there are two red nodes in a row. Deleting a black node might create a black violation, because its sibling has a black height of one and the empty node has a black height of zero.</p>
+<h1 id="insertion">Insertion</h1>
+<h2 id="basics-1">Basics</h2>
+<p>A red black tree is sorted. If we want to insert an info element into a tree, we search for it following the order relation of the info element. There are two possiblilities.</p>
+<ol type="1">
+<li><p>We find a node with the info element we want to insert. There is nothing to be done.</p></li>
+<li><p>Our search ends at an empty tree. This is the place to insert a new singleton red tree.</p></li>
+</ol>
+<p>Let’s look at the path from the insertion point to the root node.</p>
+<pre><code>    Rnew    |   B R B B R ....
+
+    Rnew    |   R B R B B ...</code></pre>
+<p>In the first case we are ready, because no violation is created.</p>
+<p>The second case is problematic, because we want to insert a red node below a red parent. We know that the grandparent must be black. We could swap the colors of the parent and the grandparent, creating a new red violation. This can bubble up until we reach two black nodes in a row.</p>
+<p>However the solution is not that simple, because <em>stealing</em> the blackness of a parent might create two new other kind of violations. 1. The black parent might have a red child. 2. The black height of a path of the other branch to which the parent belongs reduces by one.</p>
+<h2 id="algorithm">Algorithm</h2>
+<p>We can get a solution by satisfying the following insertion invariant: Inserting an element into a valid red black tree results in one of the states:</p>
+<ol type="1">
+<li><p>A nonempty tree where the root color has been changed from black to red and the new tree has the original black height.</p></li>
+<li><p>A nonempty tree where the root color has not been changed and the new tree has the original black height.</p></li>
+<li><p>Insertion into a red rooted tree ends with <code>a x b y c</code> where <code>a</code>, <code>b</code> and <code>c</code> are black rooted valid red black trees where the insertion has been successul in one of them and <code>x</code> and <code>y</code> are two info elements separating them. The black height of <code>a</code>, <code>b</code> and <code>c</code> is the black height of the original tree. Therefore we cannot form a valid red black tree of the original height without creating a red violation. The parent is black.</p></li>
+</ol>
+<p>Note that all subtrees must be valid red black trees.</p>
+<p>We have to prove that we can maintain the insertion invariant.</p>
+<p>Initially we are in state 1. We insert the new element into an empty tree by creating a singleton red tree. Because the empty tree is considered black rooted, the root color has been changed from black to red. The new tree has the same black height as the initial tree (namely zero) and the new tree is a valid red black tree.</p>
+<p>Now we have to consider inserting into a tree <code>Node(color, left, info, right)</code>. We only analyze the situation of inserting into the left child. Inserting into the right child is symmetrical. We assume that insertion into the left subtree ended in state 1, 2 or 3. We have to prove that insertion at the current level ends either in state 1, 2 or 3 as well.</p>
+<ol type="1">
+<li><p>Insertion into <code>left</code> created a new tree <code>Node(Red, a, x, b)</code> and <code>a</code> and <code>b</code> have the black height of the original tree <code>left</code>.</p>
+<ul>
+<li><p>color = Black: We create <code>Node(Black, Node(Red,a,x,b), info, right)</code> and end in state 2.</p></li>
+<li><p>color = Red: We cannot create a new valid red black tree. Therefore we end in state 3 with <code>a x b info right</code>. The next parent must be black, because the current node is red.</p></li>
+</ul></li>
+<li><p>Insertion into <code>left</code> created a new tree <code>leftNew</code> whose color has not been changed. We remain in state 2 by returning <code>Node(color, leftNew, info,    right)</code></p></li>
+<li><p>Insertion into <code>left</code> ended up with <code>a x b y c</code>. The black height of <code>a</code>, <code>b</code> and <code>c</code> is the same as the black height of <code>left</code>. Because we are in state 3, the color of the current node must be black. We end in state 1 and return <code>Node (Red, Node (Black, a, x, b), y, Node (Black, c, info, right))</code>.</p></li>
+</ol>
+<p>During insertion we have the following state diagramm.</p>
+<pre><code>                      ++++++
+                      |    |
+                      v    |
+       1   -------&gt;   2 ++++
+       ^   \
+       |    \
+       |     -----&gt;   3
+       |              |
+       \--------------/</code></pre>
+<p>If the insertion ends in state 1 or 2 at the root, then there is nothing to do. State 1 and 2 represent valid red black trees.</p>
+<p>Ending in state 3 with <code>a x b y c</code> at the root we are allowed to introduce a new black level and generate either <code>Node (Black, a, x, Node (Red, b, y, c))</code> or <code>Node (Black, Node (Red, a, x, b), y, c)</code>.</p>
+<h2 id="comparison-to-chris-okasakis-insertion-algorithm">Comparison to Chris Okasaki’s Insertion Algorithm</h2>
+<p>In 1993 Chris Okasaki published an article named <em>Red-Black Trees in a Functional Setting</em> as a functional pearl in the journal of functional programming. The article described an insertion algorithm for red black trees in Haskell.</p>
+<p>His algorithm is considered as the simplest possible insertion algorithm for red black trees in functional programming. I claim that the here presented insertion algorithm is even a little bit simpler than Chris Okasaki’s and understandable without painting tree diagramms.</p>
+<p>Furthermore it is more efficient, because</p>
+<ul>
+<li><p>It does in the rebalancing case only one case split and it does not need deep pattern match.</p></li>
+<li><p>It introduces the state 2 where nothing more has to be done until the root is reached.</p></li>
+</ul>
+<h1 id="deletion">Deletion</h1>
+<p>Deletion in a red black tree is more complicated than insertion. There are two difficulties to master:</p>
+<ul>
+<li><p>The info element to be deleted might be located in an interior node which has two non-empty children. We cannot just remove the node, because we cannot insert the two children into the parent.</p></li>
+<li><p>Deletion in one of the children of a node might reduce the black height of the child. Therefore the child with the deletion is no longer in balance with respect to black height with its sibling.</p></li>
+</ul>
+<p>Fortunately we can separate the two issues and solve them without interference.</p>
+<h2 id="deletion-of-an-interior-node">Deletion of an Interior Node</h2>
+<p>If the interior node has two non-empty children, we cannot deleted the node. However having two non-empty children, the leftmost element in the right child is a direct neighbor of the info element of the interior node in the order relation. We can delete the leftmost element and replace the info element of the interior node with the info element of the deleted leftmost node.</p>
+<p>However the node with the leftmost info element in the order relation might not be the leftmost node in the right child. Let <code>Node(color, left, x, right)</code> be the interior node to be deleted (i.e. <code>x</code> is the info element to be removed), then we can have the following situation.</p>
+<pre><code>                    x
+                              right
+                             .
+                            .
+                           y
+                     empty   z</code></pre>
+<p>The leftmost info element in the order relation is <code>y</code>, but the node carrying the info element is not a singleton node. The solution is simple: We remove the bottom node carrying <code>z</code> and replace <code>y</code> with <code>z</code> and continue as if a node with info element <code>y</code> had been deleted.</p>
+<p>This procedure leads to the following requirement:</p>
+<p>A removal function which removes an info element of a red black tree must return an optional pair. The pair consists of a new tree where a node has been deleted and the info element which has been deleted.</p>
+<p>For removal we need two functions:</p>
+<ul>
+<li><p><code>remove_leftmost tree: optional (tree,deleted)</code></p></li>
+<li><p><code>remove element tree: optional (tree,deleted)</code></p></li>
+</ul>
+<p>We can call <code>remove_leftmost</code> on an empty tree. In that case the function returns nothing. I.e. we get an implicit test, if <code>right</code> is empty or not.</p>
+<h2 id="deletion-invariant">Deletion Invariant</h2>
+<p>Successful deletion of an element in a valid red black tree results in one of the following two states:</p>
+<ol type="1">
+<li><p>The new tree has the same black height as the original tree and its color remains the same or has been changed from red to black.</p></li>
+<li><p>The new tree has a black height reduced by one. Its color is black and has not been changed.</p></li>
+</ol>
+<p>Note that state 1 does not create any problems. We can insert the new tree into the parent node. It has the same black height, therefore both children still have the same black height. Its color might have changed from red to black, therefore cannot create a red violation.</p>
+<p>State 2 is the problematic one. Since the black height has been reduced by one, we cannot reinsert the new tree into its parent node. Its sibling has a different black height. However the reduced tree is consistent. Since its color is black and unchanged, it does not create any red violation.</p>
+<p>In state 2 we have to reorganize the sibling and the parent to end up in state 1 or 2.</p>
+<h2 id="deletion-of-a-singleton-node">Deletion of a Singleton Node</h2>
+<p>Deletion of a singleton node initializes the invariant.</p>
+<p>If the deleted node is red, we start in state 1. The black height is the same (zero). Its color has changed from red to black.</p>
+<p>If the deleted node is black, we start in state 2. Its black height has reduced by one (from 1 to 0) and its color is unchanged and black.</p>
+<h2 id="integrate-a-subtree-with-deletion-into-the-parent">Integrate a Subtree with Deletion into the Parent</h2>
+<p>Let’s assume we have <code>Node(color, left, info, right)</code> and have successfully deleted one info element in the right child getting back <code>rnew</code> either in state 1 or state 2 (we describe only deletion in the right child; deletion in the left child is symmetrical). The black height of <code>rnew</code> is <code>h &gt;= 0</code> which depending on the state is either reduced or not.</p>
+<p>State 1 is trivial. We return <code>Node(color, left, info, rnew)</code> in state 1.</p>
+<p>In state 2 we have to analyze the sibling <code>left</code> in order to see, how we can reorganize the tree.</p>
+<p>We know that the black height of <code>left</code> is <code>h + 1</code>, because we are in state 2. We split up <code>left</code> to get subtrees of black height <code>h</code> or <code>h + 1</code>. We want a right subtree of <code>left</code> which is black and has the black height <code>h</code> in order to combine it with <code>rnew</code> without problems.</p>
+<p>We have to distinguish the following four cases for <code>left</code>.</p>
+<pre><code>        Bx                                  Bx
+    a       Bb                          a       Ry
+                                              Bb   Bc
+
+
+        Rx                                  Rx
+    Ba+     By                          Ba+     By
+          b   Bc                              b     Rz
+                                                  Bc   Bd</code></pre>
+<p>Since <code>left</code> is a valid red black tree with black height <code>h + 1</code>, there are no other possibilities. So we have the four ordered sequences</p>
+<pre><code>    a x Bb
+
+    a x y b Bc
+
+    a+ x b y Bc
+
+    a+ x b y z Bd</code></pre>
+<p>where the rightmost subtree is always black (indicated by <code>B</code>). The subtrees <code>a</code>, <code>b</code>, <code>c</code> and <code>d</code> have all a black height of <code>h</code> except for the last two sequences, where <code>a</code> has a black height of <code>h + 1</code> (indicated by <code>+</code>).</p>
+<p>Now we have to do a case analysis distinguishing the two possible colors of the parent node and combine the cases with the possible four cases of the sibling.</p>
+<p><strong>Parent color is red:</strong></p>
+<p>The sibling cannot be red. Therefore we have to consider only the first two cases of the sibling.</p>
+<p>We can create in both cases a new parent which has black height <code>h + 1</code> and whose color is either unchanged or changed from red to black. I.e. we end in state 1. Here are the two possibilities for the new parent node. It is not difficult to verify the invariants of the red black tree and the conditions for reaching state 1.</p>
+<pre><code>                Bx                          &lt;-- h + 1; state 1
+            a       Rinfo
+                   Bb   rnew
+
+
+                Ry                          &lt;-- h + 1; state 1
+            Bx      Binfo
+           a  b    Bc   rnew</code></pre>
+<p><strong>Parent color is black:</strong></p>
+<p>In that case all four cases for the sibling are possible. In order to end up in state 1 we have to build a new parent with black height <code>h + 2</code>. In order to reach state 2, it is sufficient to build a new parent node with black height <code>h + 1</code>.</p>
+<pre><code>                Bx                          &lt;-- h + 1; state 2
+            a       Rinfo
+                  Bb    rnew
+
+
+                By                          &lt;-- h + 2; state 1
+            Bx      Binfo
+          a    b   Bc   rnew
+
+
+                Bx                          &lt;-- h + 2; state 1
+            a+      By
+                  b     Binfo
+                       Bc   rnew
+
+                    Bx                      &lt;-- h + 2; state 1
+            a+              Rz
+                        By      Binfo
+                      b   c    Bd   rnew</code></pre>
+<h2 id="termination-of-deletion">Termination of Deletion</h2>
+<p>The deletion algorithm terminates if we reach the root. Since our deletion invariant guarantees valid red black trees in each state, there is nothing more to be done.</p>
+<h1 id="summary">Summary</h1>
+<p>We have described insertion and deletion in a red black tree. The cases to be analyzed have been minimized.</p>
+<ul>
+<li><p>Insertion is done by maintaining an insertion invariant with 3 states. Only one state describes a red black tree with a red violation of the invariant. The insertion algorithm just needs a case split on the color of the parent node in one of the states. In the other two states, no case analysis is necessary.</p></li>
+<li><p>Deletion is done by maintaining a deletion invariant with 2 states. None of the states contains a tree with a violated invariant. However restructuring with the sibling might be necessary if the black height has been reduced. The restructuring requires only four cases in the sibling of the reduced node and two cases for the possible color of the parent.</p></li>
+</ul>
+</body>
+</html>
