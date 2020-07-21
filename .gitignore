@@ -1,4 +1,8 @@
 *.swp
+*.vo
+*.vos
+*.vok
+*.glob
 *.log
 *.aux
 *.gz
