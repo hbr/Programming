@@ -65,7 +65,7 @@ a singleton node (i.e. a node with two empty sons) with an empty node.
 Invariant
 ---------
 
-1. A red node has only black chilren (an empty tree counts as black).
+1. A red node has only black children (an empty tree counts as black).
 
 2. Every path from the root to an empty node contains the same number of black
    nodes.
