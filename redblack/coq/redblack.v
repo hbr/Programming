@@ -6,9 +6,12 @@ Module Type SORTABLE.
 
     Inductive Comparison: Type := LT | EQV | GT.
 
-    Parameter compare: T -> Comparison.
+    Parameter compare: T -> T -> Comparison.
 
 End SORTABLE.
+
+
+
 
 
 Module Option.
@@ -21,61 +24,64 @@ Module Option.
         | Some v =>
             Some (f v)
         end.
+
+    Definition bind {A B: Type} (m: T A) (f: A -> T B): T B :=
+        match m with
+        | None =>
+            None
+        | Some a =>
+            f a
+        end.
 End Option.
 
-Module RedBlack (S: SORTABLE).
 
+
+
+Inductive nat: Prop := O | S: nat -> nat.
+
+
+
+
+Inductive ghost (A: Type): Prop :=
+    makeGhost: A -> ghost A.
+
+Definition
+    useGhost {A: Type} {P: Prop} (g: ghost A) (f: A -> P): P
+:=
+    match g with
+    | makeGhost _ a => f a
+    end.
+
+
+
+
+
+Module RedBlack (S: SORTABLE).
 
     (* Basic definitions. *)
 
     Inductive Color: Type := Red | Black.
 
-    Definition increase (c: Color) (h: nat): nat :=
-        match c with
-        | Red =>
-            h
-        | Black =>
-            S h
-        end.
-
-    Module Tree.
-        Inductive T: Type :=
-        | empty: T
-        | node: Color -> T -> S.T -> T -> T.
-
-        Fixpoint blackHeight (tree: T): nat :=
-            match tree with
-            | empty =>
-                O
-            | node color t1 _ _ =>
-                increase color (blackHeight t1)
-            end.
-
-        Definition color (tree: T): Color :=
-            match tree with
-            | empty =>
-                Black
-            | node c _ _ _ =>
-                c
-            end.
-    End Tree.
+    Inductive T0: Type :=
+    | empty: T0
+    | node: Color -> T0 -> S.T -> T0 -> T0.
 
 
-    Inductive isValid: Tree.T -> Color -> nat -> Prop :=
+    Inductive isValid: T0 -> Color -> nat -> Prop :=
     | validEmpty:
-        isValid Tree.empty Black O
+        isValid empty Black O
 
     | validRed:
         forall h t1 x t2,
             isValid t1 Black h
             -> isValid t2 Black h
-            -> isValid (Tree.node Red t1 x t2) Red h
+            -> isValid (node Red t1 x t2) Red h
 
     | validBlack:
         forall h t1 c1 x t2 c2,
             isValid t1 c1 h
             -> isValid t2 c2 h
-            -> isValid (Tree.node Black t1 x t2) Black (S h).
+            -> isValid (node Black t1 x t2) Black (S h).
 
 
     Inductive RBT: Type :=
@@ -90,41 +96,37 @@ Module RedBlack (S: SORTABLE).
     Definition trustMe {A: Type}: A.
     Admitted.
 
-    Inductive Inserted: Tree.T -> Type :=
+    Inductive Inserted: Type :=
         | insOk:
-            forall t0 t1,
-                let h := Tree.blackHeight t0 in
-                let c := Tree.color t0 in
+            forall t0 t1 h c,
                 isValid t0 c h
                 -> isValid t1 c h
-                -> Inserted t0
+                -> Inserted
 
         | insOkBlackRed:
-            forall t0 t1,
-                let h := Tree.blackHeight t0 in
+            forall t0 t1 h,
                 isValid t0 Black h
                 -> isValid t1 Red h
-                -> Inserted t0
+                -> Inserted
 
         | insViolation:
-            forall t0 a (x: S.T) b (y: S.T) c,
-                let h := Tree.blackHeight t0 in
+            forall t0 h a (x: S.T) b (y: S.T) c,
                 isValid t0 Red h
                 -> isValid a Black h
                 -> isValid b Black h
                 -> isValid c Black h
-                -> Inserted t0.
+                -> Inserted.
 
 
-    Definition insertedToRBT tree (ins: Inserted tree): RBT :=
+    Definition insertedToRBT (ins: Inserted): RBT :=
         match ins with
-        | insOk _ _ _ valid =>
+        | insOk _ _ _ _ _ valid =>
             makeRBT _ _ _ valid
 
         | insOkBlackRed _ _ _ _ valid =>
             makeRBT _ _ _ valid
 
-        | insViolation _ _ x _ y _ _ va vb vc =>
+        | insViolation _ _ _ x _ y _ _ va vb vc =>
             makeRBT _ _ _
                 (
                     validBlack _ _ _ x _ _
@@ -134,13 +136,33 @@ Module RedBlack (S: SORTABLE).
         end.
 
 
-    Definition
-        insert_aux (e: S.T) (tree: Tree.T)
+    Fixpoint
+        insert_aux (e: S.T) (tree: T0)
         : forall c h,
             isValid tree c h
-            -> option (Inserted tree)
-        :=
-            trustMe.
+            -> option Inserted
+    :=
+        match tree with
+        | empty =>
+            fun _ _ _ =>
+            Some (
+                insOkBlackRed _ _ _
+                    validEmpty
+                    (validRed _ _ e _ validEmpty validEmpty)
+            )
+        | node _ a x _ =>
+            match S.compare e x with
+            | S.LT =>
+                fun c h valid =>
+                Option.bind
+                    (insert_aux e a trustMe trustMe trustMe)
+                    (fun anew => trustMe)
+            | S.EQV =>
+                fun _ _ _ => None
+            | S.GT =>
+                trustMe
+            end
+        end.
 
 
 
@@ -148,7 +170,7 @@ Module RedBlack (S: SORTABLE).
         match tree with
         | makeRBT t _ _ valid =>
             Option.map
-                (insertedToRBT t)
+                insertedToRBT
                 (insert_aux e _ _ _ valid)
         end.
 End RedBlack.
