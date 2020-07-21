@@ -1,3 +1,5 @@
+From Coq Require Extraction.
+
 Module Type SORTABLE.
 
     Parameter T: Type.
@@ -56,18 +58,6 @@ Module RedBlack (S: SORTABLE).
             | node c _ _ _ =>
                 c
             end.
-
-        Definition isRed (tree: T): Prop :=
-            color tree = Red.
-
-        Definition isBlack (tree: T): Prop :=
-            color tree = Black.
-
-        Definition sameHeight (t1 t2: T): Prop :=
-            blackHeight t1 = blackHeight t2.
-
-        Definition sameColor (t1 t2: T): Prop :=
-            color t1 = color t2.
     End Tree.
 
 
@@ -88,24 +78,9 @@ Module RedBlack (S: SORTABLE).
             -> isValid (Tree.node Black t1 x t2) Black (S h).
 
 
-    Definition isValid0 (tree: Tree.T): Prop :=
-        isValid tree (Tree.color tree) (Tree.blackHeight tree).
-
-
-    Theorem validToValid0:
-        forall t h c, isValid t c h -> isValid0 t.
-    Admitted.
-
-
     Inductive RBT: Type :=
     | makeRBT:
-        forall tree, isValid0 tree -> RBT.
-
-
-    Definition validToRBT t h c (valid: isValid t c h): RBT :=
-        makeRBT _ (validToValid0 _ _ _ valid).
-
-
+        forall t c h, isValid t c h -> RBT.
 
 
 
@@ -144,13 +119,13 @@ Module RedBlack (S: SORTABLE).
     Definition insertedToRBT tree (ins: Inserted tree): RBT :=
         match ins with
         | insOk _ _ _ valid =>
-            validToRBT _ _ _ valid
+            makeRBT _ _ _ valid
 
         | insOkBlackRed _ _ _ _ valid =>
-            validToRBT _ _ _ valid
+            makeRBT _ _ _ valid
 
         | insViolation _ _ x _ y _ _ va vb vc =>
-            validToRBT _ _ _
+            makeRBT _ _ _
                 (
                     validBlack _ _ _ x _ _
                         va
@@ -161,13 +136,7 @@ Module RedBlack (S: SORTABLE).
 
     Definition
         insert_aux (e: S.T) (tree: Tree.T)
-        : isValid0 tree -> option (Inserted tree) :=
-            trustMe.
-
-
-    Definition
-        insert_aux2 (e: S.T) (tree: Tree.T)
-        : forall h c,
+        : forall c h,
             isValid tree c h
             -> option (Inserted tree)
         :=
@@ -177,9 +146,9 @@ Module RedBlack (S: SORTABLE).
 
     Definition insert (e: S.T) (tree: RBT): option RBT :=
         match tree with
-        | makeRBT t valid =>
+        | makeRBT t _ _ valid =>
             Option.map
                 (insertedToRBT t)
-                (insert_aux e t valid)
+                (insert_aux e _ _ _ valid)
         end.
 End RedBlack.
