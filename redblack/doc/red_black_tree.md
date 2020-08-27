@@ -42,8 +42,8 @@ Basics
 Definition
 ----------
 
-A red black tree is either an empty tree or a node with a color, a left son, an
-info element and a right son.
+A red black tree is either an empty tree or a node with a color, a left child, an
+info element and a right child.
 
 Each node has a color and the empty tree is considered black with a black height
 of zero.
@@ -59,7 +59,7 @@ A definition in a functional language like ocaml looks like
 
 Insertion and deletion is always done at the bottom. We insert a node by
 replacing an empty tree with a singleton red node. We delete a node by replacing
-a singleton node (i.e. a node with two empty sons) with an empty node.
+a singleton node (i.e. a node with two empty children) with an empty node.
 
 
 Invariant
@@ -74,7 +74,7 @@ Invariant
 
 
 Because the empty tree is considered black, a singleton red node does not
-violate the invariant. It has two empty black sons.
+violate the invariant. It has two empty black children.
 
 
 Examples:
@@ -177,10 +177,10 @@ same black height as the initial tree (namely zero) and the new tree is a valid
 red black tree.
 
 Now we have to consider inserting into a tree `Node(color, left, info, right)`.
-We only analyze the situation of inserting into the left son. Inserting into the
-right son is symmetrical. We assume that insertion into the left subtree ended
-in state 1, 2 or 3. We have to prove that insertion at the current level ends
-either in state 1, 2 or 3 as well.
+We only analyze the situation of inserting into the left child. Inserting into
+the right child is symmetrical. We assume that insertion into the left subtree
+ended in state 1, 2 or 3. We have to prove that insertion at the current level
+ends either in state 1, 2 or 3 as well.
 
 1. Insertion into `left` created a new tree `Node(Red, a, x, b)` and `a` and `b`
    have the black height of the original tree `left`.
@@ -262,11 +262,11 @@ Deletion in a red black tree is more complicated than insertion. There are two
 difficulties to master:
 
 - The info element to be deleted might be located in an interior node which has
-  two non-empty sons. We cannot just remove the node, because we cannot insert
-  the two sons into the parent.
+  two non-empty children. We cannot just remove the node, because we cannot insert
+  the two children into the parent.
 
-- Deletion in one of the sons of a node might reduce the black height of the
-  son. Therefore the son with the deletion is no longer in balance with respect
+- Deletion in one of the children of a node might reduce the black height of the
+  child. Therefore the child with the deletion is no longer in balance with respect
   to black height with its sibling.
 
 Fortunately we can separate the two issues and solve them without interference.
@@ -276,14 +276,14 @@ Fortunately we can separate the two issues and solve them without interference.
 Deletion of an Interior Node
 ----------------------------
 
-If the interior node has two non-empty sons, we cannot deleted the node. However
-having two non-empty sons, the leftmost element in the right son is a direct
-neighbor of the info element of the interior node in the order relation. We can
-delete the leftmost element and replace the info element of the interior node
-with the info element of the deleted leftmost node.
+If the interior node has two non-empty children, we cannot deleted the node.
+However having two non-empty children, the leftmost element in the right child
+is a direct neighbor of the info element of the interior node in the order
+relation.  We can delete the leftmost element and replace the info element of
+the interior node with the info element of the deleted leftmost node.
 
 However the node with the leftmost info element in the order relation might not
-be the leftmost node in the right son. Let `Node(color, left, x, right)` be the
+be the leftmost node in the right child. Let `Node(color, left, x, right)` be the
 interior node to be deleted (i.e. `x` is the info element to be removed), then
 we can have the following situation.
 
@@ -330,7 +330,7 @@ the following two states:
 
 
 Note that state 1 does not create any problems. We can insert the new tree into
-the parent node. It has the same black height, therefore both sons still have
+the parent node. It has the same black height, therefore both children still have
 the same black height. Its color might have changed from red to black, therefore
 cannot create a red violation.
 
@@ -361,10 +361,10 @@ Integrate a Subtree with Deletion into the Parent
 -------------------------------------------------
 
 Let's assume we have `Node(color, left, info, right)` and have successfully
-deleted one info element in the right son getting back `rnew` either in state 1
-or state 2 (we describe only deletion in the right son; deletion in the left son
-is symmetrical). The black height of `rnew` is `h >= 0` which depending on the
-state is either reduced or not.
+deleted one info element in the right child getting back `rnew` either in state
+1 or state 2 (we describe only deletion in the right child; deletion in the left
+child is symmetrical). The black height of `rnew` is `h >= 0` which depending on
+the state is either reduced or not.
 
 State 1 is trivial. We return `Node(color, left, info, rnew)` in state 1.
 
