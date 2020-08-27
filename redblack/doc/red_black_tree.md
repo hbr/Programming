@@ -295,15 +295,15 @@ we can have the following situation.
                            y
                      empty   z
 ```
-The lefmost info element in the order relation is `z`, but the node carrying the
-info element is not a singleton tree. The solution is simple: We remove the
+The leftmost info element in the order relation is `y`, but the node carrying the
+info element is not a singleton node. The solution is simple: We remove the
 bottom node carrying `z` and replace `y` with `z` and continue as if a node with
 info element `y` had been deleted.
 
 This procedure leads to the following requirement:
 
 A removal function which removes an info element of a red black tree must return
-and optional pair. The pair consists of a new tree where a node has been deleted
+an optional pair. The pair consists of a new tree where a node has been deleted
 and the info element which has been deleted.
 
 For removal we need two functions:
